@@ -1,0 +1,76 @@
+{% extends "asistencias.html" %} 
+{% block page_title %}Nuevo Turno{% endblock %}
+
+{% block content_area %}
+    <h1 class="text-2xl font-semibold text-gray-800 mb-6">Ingrese sus credenciales</h1>
+    
+    {# action="#" para que no intente enviar a una ruta Flask inexistente por ahora #}
+    <form method="POST" action="{{ url_for('main.enrolar') }}" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        
+        <div class="mb-4">
+            <label for="nombre_asistente" class="block text-gray-700 text-sm font-bold mb-2">Nombre:</label>
+            <input type="text" id="nombre_asistente" name="nombre_asistente" 
+                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                   placeholder="Ej: Ana Pérez">
+        </div>
+
+        <div class="mb-6">
+            <label for="codigo_acceso_asistente" class="block text-gray-700 text-sm font-bold mb-2">Código:</label>
+            <input type="text" id="codigo_acceso_asistente" name="codigo_acceso_asistente" 
+                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                   placeholder="Ej: AP123 (max 10 caracteres)">
+        </div>
+
+        <div class="flex items-center justify-between">
+            <button type="submit" 
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Login
+            </button>
+
+            <button type="button" id="finalizar-turno"
+                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2">
+                Finalizar turno
+            </button>
+        </div>
+    </form>
+{% endblock %}
+{% block scripts %}
+    <script>
+        function getCookie(nombre) {
+            const valor = `; ${document.cookie}`;
+            const partes = valor.split(`; ${nombre}=`);
+            if (partes.length === 2) return partes.pop().split(';').shift();
+            return null;
+        }
+
+        document.querySelector('form').addEventListener('submit', function(e) {
+            // Obtén los valores de los campos
+            let nombre = document.getElementById('nombre_asistente').value;
+            const codigo = document.getElementById('codigo_acceso_asistente').value;
+            nombre = nombre.toUpperCase();
+
+
+            document.cookie = `nombre_asistente=${encodeURIComponent(nombre)}; path=/; max-age=${60*60*24}`;
+            document.cookie = `codigo_acceso_asistente=${encodeURIComponent(codigo)}; path=/; max-age=${60*60*24}`;
+        });
+
+        // Función para borrar cookies
+        function borrarCookie(nombre) {
+            document.cookie = nombre + '=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+        }
+
+        document.getElementById('finalizar-turno').addEventListener('click', function() {
+            const inputNombre = document.getElementById('nombre_asistente').value.toUpperCase();
+            const inputCodigo = document.getElementById('codigo_acceso_asistente').value;
+            const nombreCookie = getCookie('nombre_asistente');
+            const codigoCookie = getCookie('codigo_acceso_asistente');
+            if (inputNombre === nombreCookie && inputCodigo === codigoCookie) {
+                borrarCookie('nombre_asistente');
+                borrarCookie('codigo_acceso_asistente');
+                alert('Turno finalizado.');
+            } else {
+                alert('Credenciales incorrectas.');
+            }
+        });
+    </script>
+{% endblock %}

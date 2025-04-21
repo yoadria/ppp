@@ -1,0 +1,75 @@
+amelpae@gobiernodecanarias.org
+
+base de datos
+- Tablas
+    cama
+    habitacion
+    asistente
+    llamada
+    presencia
+
+    una cama puede hacer una llamada, la llamada registrara (hora, cama, asistente que la solicita) esta llamada sera atendida por un asistente.
+    la presencia registrara (llamada, asistente, hora) 
+    una cama solo puede hacer una llamada hasta que no se haga la presencia no se podra hacer otra llamda 
+
+
+    -Configuracion de Tablas
+        > habitacion
+        - id
+        - planta
+        
+        > cama
+        - id
+        - codigo (sera un registro unico {C1A, C2B, C2A, C2B})
+        - id_habitacion (fk habitacion)
+
+        > asistente
+        - id
+        - nombre
+        - codigo -> alfanumerico de 6 digitos (esto es un codigo que tendra que elegir el asistente asi que no puede ser null y gestionar como resolver causistica de codigos repetidos)
+
+        > llamada
+        - id
+        - hora_llamada
+        - hora_asignada
+        - id_cama (fk cama)
+        - id_asistente (fk asistente)
+        - estado (enum -> [espera(la llamada se realiza y espera que sea vista por alguien), asignada(un asistente marca que la llamada se le asign y procede ir a la cama) , atendida(se activa presencia de esa llamada)])
+
+        > presensia
+        - id
+        - hora_llegada
+        - id_llamada (fk llamada)
+        - id_asistente (fk aistente -> deve coincidir con el que se le asigno la llamada)
+        
+
+
+aplicacion
+
+    se actiba llamada -> en app se abre notificacion y se activa que se a visto esa llamada | 
+                                                                                        <-
+    se registra en la base de datos llamada -> el asistente llega a la cama y activa presencia |
+                                                                                              <-
+    se registra presencia -> esa cama puede hacer llamada de nuevo.        
+
+    FLUJO
+    
+    1.Paciente activa llamada:
+        -Aplicación valida si la última llamada de la cama X tiene el estado 'atendida'. Si no, impide nueva llamada.
+        -Si se permite, se inserta en llamada: id_cama=X, hora_llamada=<ahora>, estado='espera', id_asistente=NULL.
+        -Notificación visible para todos los asistentes.
+    2.Asistente "Toma" o "Acepta" la llamada (desde la App/Notificación):
+        -Un asistente A interactúa con una llamada en estado espera.
+        -Validación: La aplicación debe verificar que la llamada aún esté en estado espera antes de asignarla (evitar que dos asistentes la tomen a la vez).
+        -Actualización en Base de Datos: Si la validación pasa, se actualiza el registro de la llamada: UPDATE llamada SET estado = 'asignada', id_asistente = <ID del asistente A> WHERE id = <ID de la llamada> AND estado = 'espera'; (El AND estado = 'espera' es una salvaguarda).
+        -En la aplicación de los asistentes, esta llamada ahora debería mostrarse como "Asignada a Asistente A" y quizás desaparecer de las listas de llamadas "sin asignar" para otros.
+    3.El Asistente Asignado llega a la cama y activa presencia:
+        -El Asistente A (el que está asignado a la llamada) llega. Utiliza su identificación (clave) y la aplicación para registrar la presencia asociada a la llamada específica.
+        -Validación Crucial: La aplicación debe verificar:
+        -Que la llamada existe y su estado es asignada.
+        -Que el id_asistente intentando registrar la presencia (identificado por su clave) coincide con el id_asistente registrado en la tabla llamada para esa id_llamada.
+        -Acciones en Base de Datos (si la validación pasa):
+        -Se inserta un nuevo registro en la tabla presencia: id_llamada=<ID de la llamada>, id_asistente=<ID del asistente A>, hora_llegada=<ahora>. (La restricción UNIQUE en presencia.id_llamada sigue aplicada).
+        -Se actualiza el estado de la llamada en la tabla llamada: UPDATE llamada SET estado = 'atendida' WHERE id = <ID de la llamada> AND estado = 'asignada'; (El AND estado = 'asignada' es una salvaguarda).
+    4.Se registra presencia -> esa cama puede hacer llamada de nuevo:
+        -Al actualizar el estado de la llamada a 'atendida', la validación en el paso 1 permitirá una nueva llamada para esa cama.

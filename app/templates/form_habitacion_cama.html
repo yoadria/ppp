@@ -1,0 +1,112 @@
+{% extends "index.html" %} 
+
+{% block page_title %}Crear Nueva Habitacion{% endblock %}
+
+{% block content_area %}
+    <h1 class="text-2xl font-semibold text-gray-800 mb-6">Habitacion nueva</h1>
+    
+    {# action="#" para que no intente enviar a una ruta Flask inexistente por ahora #}
+    <form method="POST" action="{{ url_for('main.formulario_habitacion') }}" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        
+        <div class="mb-4">
+            <label for="planta_habitacion" class="block text-gray-700 text-sm font-bold mb-2">Planta:</label>
+            <input type="number" id="planta_habitacion" name="planta_habitacion" 
+                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                   placeholder="Ej: 1 (número entero)">
+        </div>
+
+        <div class="mb-6">
+            <label for="numero_habitacion" class="block text-gray-700 text-sm font-bold mb-2">Numero de la habitacion:</label>
+            <input type="number" id="numero_habitacion" name="numero_habitacion" 
+                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                   placeholder="Ej: 1 (número entero)">
+        </div>
+
+        <hr class="my-6">
+
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold text-gray-700">Camas de la Habitación</h2>
+            <button type="button" id="add-cama-btn"
+                    class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-sm">
+                Añadir Cama
+            </button>
+        </div>
+
+        {# Contenedor para las tarjetas de cama. Usaremos Grid aquí #}
+        <div id="camas-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
+ 
+
+        </div>
+
+        <div class="flex items-center justify-between">
+            <button type="submit" 
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Crear Habitacion 
+            </button>
+            
+            {# Este url_for('main.index') debería funcionar porque la ruta index existe #}
+            <a href="{{ url_for('main.index') }}" 
+               class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
+                Cancelar
+            </a>
+        </div>
+    </form>
+
+
+{% endblock %}
+
+{% block scripts %}
+    <script>
+    // Letras para las camas
+    const letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+    let camaCount = 0;
+
+    // Función para crear el div de una cama
+    function crearCamaDiv(idx) {
+        const div = document.createElement('div');
+        div.className = "cama-entry bg-gray-50 p-4 rounded border border-gray-200 shadow-sm flex items-center justify-between";
+        div.innerHTML = `
+            <span class="block text-gray-700 text-lg font-bold">Cama ${letras[idx]}:</span>
+            <input type="hidden" name="camas[${idx}][identificador]" value="${letras[idx]}">
+            <button type="button" class="ml-4 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-xs remove-cama-btn">
+                Eliminar
+            </button>
+        `;
+        return div;
+    }
+
+    // Añadir dos camas por defecto al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        const camasContainer = document.getElementById('camas-container');
+        for (let i = 0; i < 2; i++) {
+            camasContainer.appendChild(crearCamaDiv(i));
+            camaCount++;
+        }
+    });
+
+    // Lógica para añadir cama
+    document.getElementById('add-cama-btn').addEventListener('click', function() {
+        const camasContainer = document.getElementById('camas-container');
+        if (camaCount < letras.length) {
+            camasContainer.appendChild(crearCamaDiv(camaCount));
+            camaCount++;
+        }
+    });
+
+    // Lógica para eliminar cama y reordenar letras
+    document.getElementById('camas-container').addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-cama-btn')) {
+            e.target.parentElement.remove();
+            // Recalcular los índices y nombres de los inputs
+            const camas = document.querySelectorAll('.cama-entry');
+            camaCount = camas.length;
+            camas.forEach((div, idx) => {
+                div.querySelector('span').textContent = `Cama ${letras[idx]}:`;
+                div.querySelector('input[type="hidden"]').name = `camas[${idx}][identificador]`;
+                div.querySelector('input[type="hidden"]').value = letras[idx];
+            });
+        }
+    });
+    </script>
+{% endblock %}
+

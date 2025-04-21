@@ -1,18 +1,19 @@
-version: '3.9'
 services:
   mariadb:
     image: mariadb:latest
     container_name: mariadb
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_DATABASE: pruebadb
-      MYSQL_USER: myuser
-      MYSQL_PASSWORD: mypass
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: Europe/London
     ports:
       - "3306:3306"
     volumes:
       - mariadb_data:/var/lib/mysql
+      - ./initdb:/docker-entrypoint-initdb.d
 
   nginx:
     image: nginx:latest
@@ -24,18 +25,45 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./html:/usr/share/nginx/html:ro
 
-  mysql-client:
-    image: mysql:latest
-    container_name: mysql-client
-    depends_on:
-      - mariadb
-    entrypoint: ["tail", "-f", "/dev/null"]
-
   adminer:
     image: adminer
     restart: always
     ports:
       - 8080:8080
+  flask_app:
+    build: .
+    container_name: flask_app
+    restart: always
+    ports:
+      - "5000:5000"
+    command: ["flask", "run", "--host=0.0.0.0", "--port=5000"]
+    environment:
+      - FLASK_APP=main.py
+      - FLASK_DEBUG=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - API_TOKEN=${API_TOKEN}
+      - USER_KEY=${USER_KEY}
+      - IP_RELE=${IP_RELE}
+      - WDB_SOCKET_SERVER=wdb
+      - WDB_NO_BROWSER_AUTO_OPEN=True
+    depends_on:
+      - mariadb
+    volumes:
+      - .:/ppp
+
+  wdb:
+    image: kozea/wdb
+    ports:
+      - "127.0.0.1:5001:1984"
+    init: true
 
 volumes:
   mariadb_data:
+
+networks:
+  ppp_net:
+    driver: bridge
