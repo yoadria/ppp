@@ -1,0 +1,25 @@
+base de datos
+- Tablas
+    cama
+    habitacion
+    asistente
+    llamada
+    presencia
+
+    una cama puede hacer una llamada, la llamada registrara (hora, cama, asistente que la solicita) esta llamada sera atendida por un asistente.
+    la presencia registrara (llamada, asistente, hora) 
+    una cama solo puede hacer una llamada hasta que no se haga la presencia no se podra hacer otra llamda 
+
+
+    -Configuracion de Tablas
+        habitacion
+
+aplicacion
+
+    se actiba llamada -> en app se abre notificacion y se activa que se a visto esa llamada | 
+                                                                                        <-
+    se registra en la base de datos llamada -> el asistente llega a la cama y activa presencia |
+                                                                                              <-
+    se registra presencia -> esa cama puede hacer llamada de nuevo.        
+
+
