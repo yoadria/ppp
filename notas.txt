@@ -12,7 +12,33 @@ base de datos
 
 
     -Configuracion de Tablas
-        habitacion
+        > habitacion
+        - id
+        - planta
+        
+        > cama
+        - id
+        - codigo (sera un registro unico {C1A, C2B, C2A, C2B})
+        - id_habitacion (fk habitacion)
+
+        > asistente
+        - id
+        - nombre
+
+        > llamada
+        - id
+        - hora_llamada
+        - id_cama (fk cama)
+        - id_asistente (fk asistente)
+        - atendida (booleano)
+
+        > presensia
+        - id
+        - hora_llegada
+        - id_llamada (fk llamada)
+        - id_asistente
+        
+
 
 aplicacion
 
