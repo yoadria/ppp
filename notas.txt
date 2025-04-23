@@ -24,19 +24,21 @@ base de datos
         > asistente
         - id
         - nombre
+        - clave [id-nombre -> de esta forma es unica y sin confusion por el momento](esto seria provisional para hacerlo mas analogico, la idea es que cad asistente tubiera un acreditacion y pasando una larjeta se sepa que es el)
 
         > llamada
         - id
         - hora_llamada
+        - hora_asignada
         - id_cama (fk cama)
         - id_asistente (fk asistente)
-        - atendida (booleano)
+        - estado (enum -> [espera(la llamada se realiza y espera que sea vista por alguien), asignada(un asistente marca que la llamada se le asign y procede ir a la cama) , atendida(se activa presencia de esa llamada)])
 
         > presensia
         - id
         - hora_llegada
         - id_llamada (fk llamada)
-        - id_asistente
+        - id_asistente (fk aistente -> deve coincidir con el que se le asigno la llamada)
         
 
 
@@ -48,4 +50,24 @@ aplicacion
                                                                                               <-
     se registra presencia -> esa cama puede hacer llamada de nuevo.        
 
-
+    FLUJO
+    
+    1.Paciente activa llamada:
+        -Aplicación valida si la última llamada de la cama X tiene el estado 'atendida'. Si no, impide nueva llamada.
+        -Si se permite, se inserta en llamada: id_cama=X, hora_llamada=<ahora>, estado='espera', id_asistente=NULL.
+        -Notificación visible para todos los asistentes.
+    2.Asistente "Toma" o "Acepta" la llamada (desde la App/Notificación):
+        -Un asistente A interactúa con una llamada en estado espera.
+        -Validación: La aplicación debe verificar que la llamada aún esté en estado espera antes de asignarla (evitar que dos asistentes la tomen a la vez).
+        -Actualización en Base de Datos: Si la validación pasa, se actualiza el registro de la llamada: UPDATE llamada SET estado = 'asignada', id_asistente = <ID del asistente A> WHERE id = <ID de la llamada> AND estado = 'espera'; (El AND estado = 'espera' es una salvaguarda).
+        -En la aplicación de los asistentes, esta llamada ahora debería mostrarse como "Asignada a Asistente A" y quizás desaparecer de las listas de llamadas "sin asignar" para otros.
+    3.El Asistente Asignado llega a la cama y activa presencia:
+        -El Asistente A (el que está asignado a la llamada) llega. Utiliza su identificación (clave) y la aplicación para registrar la presencia asociada a la llamada específica.
+        -Validación Crucial: La aplicación debe verificar:
+        -Que la llamada existe y su estado es asignada.
+        -Que el id_asistente intentando registrar la presencia (identificado por su clave) coincide con el id_asistente registrado en la tabla llamada para esa id_llamada.
+        -Acciones en Base de Datos (si la validación pasa):
+        -Se inserta un nuevo registro en la tabla presencia: id_llamada=<ID de la llamada>, id_asistente=<ID del asistente A>, hora_llegada=<ahora>. (La restricción UNIQUE en presencia.id_llamada sigue aplicada).
+        -Se actualiza el estado de la llamada en la tabla llamada: UPDATE llamada SET estado = 'atendida' WHERE id = <ID de la llamada> AND estado = 'asignada'; (El AND estado = 'asignada' es una salvaguarda).
+    4.Se registra presencia -> esa cama puede hacer llamada de nuevo:
+        -Al actualizar el estado de la llamada a 'atendida', la validación en el paso 1 permitirá una nueva llamada para esa cama.
