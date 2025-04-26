@@ -24,7 +24,7 @@ base de datos
         > asistente
         - id
         - nombre
-        - clave [id-nombre -> de esta forma es unica y sin confusion por el momento](esto seria provisional para hacerlo mas analogico, la idea es que cad asistente tubiera un acreditacion y pasando una larjeta se sepa que es el)
+        - codigo -> alfanumerico de 6 digitos (esto es un codigo que tendra que elegir el asistente asi que no puede ser null y gestionar como resolver causistica de codigos repetidos)
 
         > llamada
         - id

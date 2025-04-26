@@ -6,9 +6,9 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_DATABASE: pruebadb
-      MYSQL_USER: myuser
-      MYSQL_PASSWORD: mypass
+      MYSQL_DATABASE: hospital_call
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
     ports:
       - "3306:3306"
     volumes:
