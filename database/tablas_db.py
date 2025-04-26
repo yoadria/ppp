@@ -6,18 +6,10 @@ _logging = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-# Configuración de la base de datos (ajusta con tus credenciales de Docker Compose)
-#DB_HOST = 'mariadb'  # El nombre del servicio de MariaDB en Docker
-DB_HOST = '127.0.0.1'
-DB_USER = 'admin'
-DB_PASSWORD = 'admin'
-DB_NAME = 'hospital_call'
 
-def crear_tabla_llamadas():
-    conn = None  # Inicializa la conexión a None para manejar el bloque finally
+def crear_tabla_llamadas(conn):
     try:
         # Conectar a la base de datos
-        conn = pymysql.connect(host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_NAME)
         cursor = conn.cursor()
 
         # Sentencias SQL para crear las tablas (DDL)
@@ -99,6 +91,3 @@ def crear_tabla_llamadas():
                 cursor.close() #Moverlo a la sentencia finally
             conn.close() #Moverlo a la sentencia finally
 
-if __name__ == '__main__':
-    with app.app_context():
-        crear_tabla_llamadas()

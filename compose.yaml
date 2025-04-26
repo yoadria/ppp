@@ -36,6 +36,23 @@ services:
     restart: always
     ports:
       - 8080:8080
+  flask_app:
+    build: .
+    container_name: flask_app
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - DB_HOST=mariadb
+      - DB_USER=admin
+      - DB_PASSWORD=admin
+      - DB_NAME=hospital_call
+    depends_on:
+      - mariadb
 
 volumes:
   mariadb_data:
+
+networks:
+  ppp_net:
+    driver: bridge
