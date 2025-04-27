@@ -2,10 +2,10 @@
 FROM python:3.12.3-slim
 
 # Define el directorio de trabajo
-WORKDIR /app
+WORKDIR /ppp
 
 # Copia tu proyecto dentro del contenedor
-COPY . /ppp
+COPY . .
 
 # Instala las librerías necesarias
 RUN pip install --no-cache-dir -r /ppp/requirements.txt
@@ -13,5 +13,5 @@ RUN pip install --no-cache-dir -r /ppp/requirements.txt
 # Expone el puerto de Flask
 EXPOSE 5000
 
-# Comando para correr Flask
-CMD ["python", "/ppp/main.py"]
+# Comando para correr l app
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "main:app"]

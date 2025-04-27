@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 import logging
 from database.conexion import get_db_connection
 from database.tablas_db import crear_tabla_llamadas
@@ -7,7 +7,8 @@ _logging = logging.getLogger(__name__)
 app = Flask(__name__)
 @app.route('/')
 def home():
-    return "¡Hola desde Flask con Nginx!"
+    return send_from_directory('html', 'index.html')
+
 def inicio():
     conn = get_db_connection()
     if conn:
