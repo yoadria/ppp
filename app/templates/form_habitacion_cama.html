@@ -1,0 +1,78 @@
+{% extends "index.html" %} 
+
+{% block page_title %}Crear Nueva Habitacion{% endblock %}
+
+{% block content_area %}
+    <h1 class="text-2xl font-semibold text-gray-800 mb-6">Habitacion nueva</h1>
+    
+    {# action="#" para que no intente enviar a una ruta Flask inexistente por ahora #}
+    <form method="POST" action="{{ url_for('main.formulario_habitacion') }}" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        
+        <div class="mb-4">
+            <label for="planta_habitacion" class="block text-gray-700 text-sm font-bold mb-2">Planta:</label>
+            <input type="number" id="planta_habitacion" name="planta_habitacion" 
+                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                   placeholder="Ej: 1 (número entero)">
+        </div>
+
+        <div class="mb-6">
+            <label for="numero_habitacion" class="block text-gray-700 text-sm font-bold mb-2">Numero de la habitacion:</label>
+            <input type="number" id="numero_habitacion" name="numero_habitacion" 
+                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                   placeholder="Ej: 1 (número entero)">
+        </div>
+
+        <!-- <hr class="my-6">
+
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold text-gray-700">Camas de la Habitación</h2>
+            <button type="button" id="add-cama-btn"
+                    class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-sm">
+                Añadir Cama
+            </button>
+        </div>
+
+        {# Contenedor para las tarjetas de cama. Usaremos Grid aquí #}
+        <div id="camas-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
+            {# Aquí se añadirán dinámicamente los campos para las camas #}
+            
+            {# Tus ejemplos estáticos originales, adaptados a la estructura de tarjeta y listos para ser manejados por JS #}
+            {# Estos serían ELIMINADOS si quieres que el JS los cree desde cero, o mantenidos si quieres que el JS los "adopte" #}
+            <div class="cama-entry bg-gray-50 p-4 rounded border border-gray-200 shadow-sm">
+                <div class="flex items-center mb-2"> {# Para alinear label e input si quieres, o simplemente label arriba #}
+                    <label for="cama_identificador_0" class="block text-gray-700 text-sm font-bold mr-2 shrink-0">Cama A:</label>
+                    <input type="text" name="camas[0][identificador]" id="cama_identificador_0" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ej: A, Principal" required>
+                </div>
+                <button type="button" class="w-full mt-2 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-xs remove-cama-btn">
+                    Eliminar Cama
+                </button>
+            </div>
+
+            <div class="cama-entry bg-gray-50 p-4 rounded border border-gray-200 shadow-sm">
+                 <div class="flex items-center mb-2">
+                    <label for="cama_identificador_1" class="block text-gray-700 text-sm font-bold mr-2 shrink-0">Cama B:</label>
+                    <input type="text" name="camas[1][identificador]" id="cama_identificador_1" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ej: B, Secundaria" required>
+                </div>
+                <button type="button" class="w-full mt-2 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-xs remove-cama-btn">
+                    Eliminar Cama
+                </button>
+            </div>
+            {# Fin de tus ejemplos estáticos adaptados #}
+
+        </div> -->
+
+        <div class="flex items-center justify-between">
+            <button type="submit" 
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Crear Habitacion 
+            </button>
+            
+            {# Este url_for('main.index') debería funcionar porque la ruta index existe #}
+            <a href="{{ url_for('main.index') }}" 
+               class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
+                Cancelar
+            </a>
+        </div>
+    </form>
+{% endblock %}
+

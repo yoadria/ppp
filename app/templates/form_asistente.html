@@ -1,0 +1,52 @@
+{% extends "index.html" %} {# MUY IMPORTANTE: Extiende tu index.html #}
+
+{% block page_title %}Crear Nuevo Asistente{% endblock %}
+
+{% block content_area %}
+    <h1 class="text-2xl font-semibold text-gray-800 mb-6">Nuevo Asistente</h1>
+    
+    {# action="#" para que no intente enviar a una ruta Flask inexistente por ahora #}
+    <form method="POST" action="{{ url_for('main.formulario_asistente') }}" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        
+        <div class="mb-4">
+            <label for="nombre_asistente" class="block text-gray-700 text-sm font-bold mb-2">Nombre:</label>
+            <input type="text" id="nombre_asistente" name="nombre_asistente" 
+                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                   placeholder="Ej: Ana Pérez">
+        </div>
+
+        <div class="mb-6">
+            <label for="codigo_acceso_asistente" class="block text-gray-700 text-sm font-bold mb-2">Código:</label>
+            <input type="text" id="codigo_acceso_asistente" name="codigo_acceso_asistente" 
+                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                   placeholder="Ej: AP123 (max 10 caracteres)">
+        </div>
+
+        <div class="flex items-center justify-between">
+            <button type="submit" 
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Crear Asistente 
+            </button>
+            
+            {# Este url_for('main.index') debería funcionar porque la ruta index existe #}
+            <a href="{{ url_for('main.index') }}" 
+               class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
+                Cancelar
+            </a>
+        </div>
+    </form>
+{% endblock %}
+
+<!-- {% block scripts %}
+<script>
+document.querySelector('form').addEventListener('submit', function(e) {
+    // Obtén los valores de los campos
+    const nombre = document.getElementById('nombre_asistente').value;
+    const codigo = document.getElementById('codigo_acceso_asistente').value;
+
+    // Guarda en cookies (expira en 7 días)
+    document.cookie = `nombre_asistente=${encodeURIComponent(nombre)}; path=/; max-age=${60*60*24*7}`;
+    document.cookie = `codigo_acceso_asistente=${encodeURIComponent(codigo)}; path=/; max-age=${60*60*24*7}`;
+});
+</script>
+{% endblock %} -->

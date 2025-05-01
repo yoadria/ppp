@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r /ppp/requirements.txt
 EXPOSE 5000
 
 # Comando para correr l app
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "main:app"]
+CMD ["gunicorn", "--reload", "-w", "4", "--threads", "4", "-t", "60", "-b", "0.0.0.0:5000", "main:app"]
