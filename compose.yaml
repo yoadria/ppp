@@ -49,7 +49,8 @@ services:
       - DB_NAME=hospital_call
     depends_on:
       - mariadb
-
+    volumes:
+      - .:/ppp
 volumes:
   mariadb_data:
 
