@@ -1,0 +1,292 @@
+este es mi ppp/main.py:
+from app import create_app
+
+app = create_app()
+
+if __name__ == '__main__':
+    app.run(debug = True, host="0.0.0.0") #Que no sea visible para todo el mundo - para eso usar un host ="0.0.0.0"
+
+ppp/app/__init__.py:
+from flask import Flask
+from database.conexion import init_db_connection
+
+def create_app():
+    app = Flask(__name__)
+
+    # Inicializa la conexión global a la BD
+    init_db_connection()
+    
+
+    from .routes import main
+    app.register_blueprint(main)
+
+    return app
+
+ppp/app/pushover_app.py:
+import requests
+
+API_TOKEN = 'aihav4mdzxeey528gkmmaknt75nf81'
+USER_KEY =  'usi8tt5hzn9utn8wv6sq8higcn4pgb'
+
+def enviar_notificacion_llamada(habitacion, cama):
+    mensaje = f"Llamada desde habitación <u>{habitacion}</u>, cama <b>{cama}</b>."
+    data = {
+        "token": API_TOKEN,
+        "user": USER_KEY,
+        "message": mensaje,
+        "title": "Nueva llamada",
+        "html": 1,  # Permite HTML
+        "priority": 0,  # 0 es normal, 1 es alta prioridad, -1 es silencioso
+        "sound": "pushover"  # Puedes personalizar el sonido
+    }
+    try:
+        response = requests.post("https://api.pushover.net/1/messages.json", data=data)
+        response.raise_for_status()
+        print("✅ Notificación enviada correctamente.")
+    except requests.exceptions.RequestException as e:
+        print("❌ Error al enviar notificación:", e)
+
+
+
+
+ppp/app/routes.py:
+from flask import Blueprint, render_template, jsonify, request
+from database.tablas_db import crear_tabla_llamadas
+from database.conexion import get_db_connection
+from database.insertar_datos import *
+from .pushover_app import enviar_notificacion_llamada
+
+main = Blueprint('main', __name__)
+
+# ruta de inicio
+@main.route('/')
+def index():
+    return render_template('index.html')
+
+@main.route('/panel_habitacion')
+def panel_habitacion():
+    return render_template('panelhab.html')
+
+# ruta para crear las tablas mas adelante se tendra que incluir en la inisializacion de la app
+@main.route('/tablas')
+def crear_tablas():
+    conn = get_db_connection()
+    if conn:
+        salida = crear_tabla_llamadas(conn)
+
+    return jsonify ({"mensaje": salida})
+
+# ruta para crear asistente post
+@main.route('/api/asistente', methods=['POST'])
+def crear_asistente():
+    data = request.get_json()
+    nombre = data.get('nombre')
+    codigo_acceso = data.get('codigo_acceso')
+    
+
+    if not nombre or not codigo_acceso:
+        return jsonify({"mensaje": "Faltan datos"}), 400
+
+    try:
+        datos = {'nombre': nombre, 'codigo':codigo_acceso}
+        conn = get_db_connection()
+        salida = nuevo_asistente(conn, datos)
+
+        return jsonify({"mensaje": salida}), 201
+    except Exception as e:
+        return jsonify({"mensaje": salida}), 500
+
+# ruta para crear habitacion post    
+@main.route('/api/habitacion', methods=['POST'])
+def crear_habitacion():
+    data = request.get_json()
+    numero = data.get('numero')
+    planta = data.get('planta')
+
+    if not numero or not planta:
+        return jsonify({"mensaje": "Faltan datos"}), 400
+
+    datos = {'numero': numero, 'planta':planta}
+    conn = get_db_connection()
+    salida = nueva_habitacion(conn, datos)
+
+    if salida['exito']:
+        return jsonify({"mensaje": salida}), 201
+    else:
+        return jsonify({"mensaje": salida}), 500
+    
+
+# ruta para crear cama post    
+@main.route('/api/cama', methods=['POST'])
+def crear_cama():
+    data = request.get_json()
+    codigo = data.get('codigo')
+    id_habitacion = data.get('id_habitacion')
+
+    if not codigo or not id_habitacion:
+        return jsonify({"mensaje": "Faltan datos"}), 400
+
+    
+    datos = {'codigo': codigo, 'id_habitacion':id_habitacion}
+    conn = get_db_connection()
+    salida = nueva_cama(conn, datos)
+
+    if salida['exito']:
+        return jsonify({"mensaje": salida}), 201
+    else:
+        return jsonify({"mensaje": salida}), 500
+    
+@main.route('/api/llamada', methods=['POST'])
+def crear_llamada():
+    data = request.get_json()
+
+
+@main.route('/llamada/<int:habitacion>/<string:cama>', methods=['GET'])
+def llamada(habitacion, cama):
+    enviar_notificacion_llamada(habitacion, cama)
+    return jsonify({'status': 'ok', 'mensaje': f'Llamada registrada para habitación {habitacion}, cama {cama}'}), 200
+
+ppp/compose.yaml:
+version: '3.9'
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: hospital_call
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./html:/usr/share/nginx/html:ro
+
+
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+  flask_app:
+    build: .
+    container_name: flask_app
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=main.py
+      - FLASK_ENV=development  # Esto activa el modo desarrollo
+      - DB_HOST=mariadb
+      - DB_USER=admin
+      - DB_PASSWORD=admin
+      - DB_NAME=hospital_call
+    depends_on:
+      - mariadb
+    volumes:
+      - .:/ppp
+volumes:
+  mariadb_data:
+
+networks:
+  ppp_net:
+    driver: bridge
+ppp/Dockerfile:
+# Usa una imagen de Python liviana
+FROM python:3.12.3-slim
+
+# Define el directorio de trabajo
+WORKDIR /ppp
+
+# Copia tu proyecto dentro del contenedor
+COPY . .
+
+# Instala las librerías necesarias
+RUN pip install --no-cache-dir -r /ppp/requirements.txt
+
+# Expone el puerto de Flask
+EXPOSE 5000
+
+# Comando para correr l app
+CMD ["gunicorn", "--reload", "-w", "4","-t", "4", "-b", "0.0.0.0:5000", "main:app"]
+
+ppp/requirements.txt:
+flask
+pymysql
+gunicorn
+pushover
+requests
+
+ppp/nginx/nginx.conf
+
+events {
+    worker_connections 1024;  # Número de conexiones que cada proceso worker puede manejar
+}
+
+http {
+    server {
+        listen 80;
+        server_name localhost;
+
+        location / {
+            proxy_pass http://flask_app:5000;  # Nombre del contenedor Flask
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            proxy_buffering on;
+            proxy_buffer_size 128k;
+            proxy_buffers 4 256k;
+            proxy_busy_buffers_size 256k;
+        }
+
+    }
+
+}
+
+ppp/templates/panelhab.html
+
+<html>
+	<head>
+		<title>lampara 2</title>
+		<meta charset="utf-8">
+		<meta http-equiv="refresh" content="2">
+	</head>
+	<body style="text-align:center;">
+		<button id="conmutador" onclick="llamada()">Llamada</button>
+		<br>
+		<br>
+		<button id="presencia" onclick="presencia()">Presencia</button>
+		<br>
+		<br>
+		{% if lampara==0 %}
+			<img id="lampara" src="/static/pic_bulboff.gif">
+		{% else %}
+			<img id="lampara" src="/static/pic_bulbon.gif">
+		{% endif %}
+	</body>
+</html>
+<script type="text/javascript">
+	//let estado=0;
+	function llamada(){
+		fetch('http://localhost:5000/llamada/101/A') 
+			.then(response => response.json()) // Convierte la respuesta en JSON
+		}
+	function presencia(){
+		fetch('http://localhost:5000/presencia/101/A') 
+			.then(response => response.json()) // Convierte la respuesta en JSON
+	}
+</script>

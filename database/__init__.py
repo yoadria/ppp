@@ -1,3 +1,2 @@
 from . import conexion
-from . import tablas_db
-
+from . import insertar_datos
