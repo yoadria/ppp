@@ -1,26 +1,41 @@
 import pymysql
 
-def get_llamada(conn,codigo_cama ):
+def get_existe_llamada(conn,codigo_cama ):
+    ''' consuta para saber si una cama tiene una llamada activa'''
     try:
         cursor = conn.cursor()
         cursor.execute(
             '''
-            SELECT l.estado
+            SELECT *
             FROM llamada l
-            JOIN cama c ON l.id_cama = c.id
-            WHERE c.codigo = %s
-            ORDER BY l.hora_llamada DESC
-            LIMIT 1;
+            JOIN cama c ON l.codigo_cama = c.codigo
+            WHERE c.codigo = %s and l.estado = 0;
             ''',
             (codigo_cama,)
         )
-        resultado = cursor.fetchone()
-        if resultado:
-            return resultado[0]
-        else:
-            return "No hay llamadas para esa cama"
+        resultado = cursor.fetchone() 
+        return {"exito":True, "mensaje": resultado}
     except pymysql.Error as e:
-        return f"Error al obtener estado de llamada: {e}"
+        return {"exito":False, "mensaje":e}
+    finally:
+        if cursor:
+            cursor.close()
+
+def get_lampara(conn,codigo_cama ):
+    '''funcion que obitene los datos de la cama a partir del codigo'''
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            '''
+            SELECT lampara
+            FROM cama 
+            WHERE codigo = %s;
+            ''',
+            (codigo_cama,)
+        )
+        return cursor.fetchone() # se devuelve el resultado de la consulta
+    except pymysql.Error as e:
+        return e
     finally:
         if cursor:
             cursor.close()

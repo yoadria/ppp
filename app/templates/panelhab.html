@@ -2,7 +2,7 @@
 	<head>
 		<title>lampara 2</title>
 		<meta charset="utf-8">
-		<meta http-equiv="refresh" content="2">
+		<!-- <meta http-equiv="refresh" content="2"> -->
 	</head>
 	<body style="text-align:center;">
 		<button id="conmutador" onclick="llamada()">Llamada</button>
@@ -21,9 +21,10 @@
 <script type="text/javascript">
 	//let estado=0;
 	function llamada(){
-		fetch('http://localhost:5000/llamada/101/A') 
+		fetch('http://localhost:5000/llamada/1/101A') 
 			.then(response => response.json()) // Convierte la respuesta en JSON
 		}
+
 	function presencia(){
 		fetch('http://localhost:5000/presencia/101/A') 
 			.then(response => response.json()) // Convierte la respuesta en JSON

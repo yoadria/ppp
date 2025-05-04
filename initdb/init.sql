@@ -5,9 +5,9 @@ CREATE TABLE IF NOT EXISTS habitacion (
 );
 
 CREATE TABLE IF NOT EXISTS cama (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    codigo VARCHAR(10) UNIQUE NOT NULL,
+    codigo VARCHAR(10) PRIMARY KEY,
     id_habitacion INT NOT NULL,
+    lampara BOOLEAN NOT NULL DEFAULT 0,
     FOREIGN KEY (id_habitacion) REFERENCES habitacion(id) ON DELETE CASCADE
 );
 
@@ -17,12 +17,14 @@ CREATE TABLE IF NOT EXISTS asistente (
     codigo_acceso VARCHAR(10) UNIQUE NOT NULL
 );
 
+
 CREATE TABLE IF NOT EXISTS llamada (
     id INT AUTO_INCREMENT PRIMARY KEY,
     hora_llamada TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    id_cama INT NOT NULL,
+    codigo_cama VARCHAR(10) NOT NULL,
     estado BOOLEAN  NOT NULL DEFAULT 0,
-    FOREIGN KEY (id_cama) REFERENCES cama(id) ON DELETE CASCADE
+    receip_id VARCHAR(50),
+    FOREIGN KEY (codigo_cama) REFERENCES cama(codigo) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS presencia (
@@ -33,3 +35,28 @@ CREATE TABLE IF NOT EXISTS presencia (
     FOREIGN KEY (id_llamada) REFERENCES llamada(id) ON DELETE CASCADE,
     FOREIGN KEY (id_asistente) REFERENCES asistente(id) ON DELETE CASCADE
 );
+
+
+DELIMITER $$
+CREATE TRIGGER encender_lampara
+AFTER INSERT ON llamada
+FOR EACH ROW
+BEGIN
+    UPDATE cama
+    SET lampara = 1
+    WHERE codigo = NEW.codigo_cama;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER apagar_lampara
+AFTER UPDATE ON llamada
+FOR EACH ROW
+BEGIN
+    IF NEW.estado = 1 AND OLD.estado = 0 THEN
+        UPDATE cama
+        SET lampara = 0
+        WHERE codigo = NEW.codigo_cama;
+    END IF;
+END $$
+DELIMITER ;

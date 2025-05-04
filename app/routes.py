@@ -1,8 +1,18 @@
 from flask import Blueprint, render_template, jsonify, request
 from database.conexion import get_db_connection
 from database.insertar_datos import *
+from database.solicitar_datos import *
 from .pushover_app import enviar_notificacion_llamada
+from database.actualizar_datos import *
+import logging
 
+
+logging.basicConfig(
+    level=logging.DEBUG,  # Muestra los logs de nivel DEBUG y superior
+    format='%(asctime)s - %(levelname)s - %(message)s'  # Formato para mostrar los logs
+)
+
+_logging = logging.getLogger(__name__)
 main = Blueprint('main', __name__)
 
 # ruta de inicio
@@ -12,7 +22,9 @@ def index():
 
 @main.route('/panel_habitacion')
 def panel_habitacion():
-    return render_template('panelhab.html')
+    conn = get_db_connection()
+    lampara = get_lampara(conn, '101A')
+    return render_template('panelhab.html', lampara=lampara)
 
 
 # ruta para crear asistente post
@@ -82,12 +94,39 @@ def crear_cama():
         
         return jsonify({"mensaje": salida}), 500
     
-@main.route('/api/llamada', methods=['POST'])
-def crear_llamada():
-    data = request.get_json()
 
 
 @main.route('/llamada/<int:habitacion>/<string:cama>', methods=['GET'])
 def llamada(habitacion, cama):
-    enviar_notificacion_llamada(habitacion, cama)
-    return jsonify({'status': 'ok', 'mensaje': f'Llamada registrada para habitación {habitacion}, cama {cama}'}), 200
+    # import wdb; wdb.set_trace()
+    conn = get_db_connection()
+    existe_llamada = get_existe_llamada(conn, cama)
+
+    # se realiza consulta con exito
+    if existe_llamada['exito']: 
+
+        # hay una llamada activa no hace nada   
+        if existe_llamada['mensaje'] != None:
+            # return jsonify({'status': 'ok', 'mensaje': f'Llamada ya registrada para habitación {habitacion}, cama {cama}'}), 200
+            _logging.debug("hay una llamada en espera")
+            return jsonify({'status': 'ok', 'mensaje': f'ya hay una llamada realizada'}), 200
+
+        #no existe la llamada
+        else:
+            _logging.info("No hay llamada en espera")
+            # se procede a crear llamda    
+            salida = crear_llamada(conn, cama)
+            # se a creado la llamada con exito
+            if salida['exito']:
+                receipt_id = enviar_notificacion_llamada(habitacion, cama)
+                salida_actualizar = actualizar_receip_llamada(conn, cama, receipt_id)
+                _logging.debug("ID de respuesta: %s", receipt_id)
+                return jsonify({'mensaje': salida}), 200
+            #error al crear la llamda
+            else:
+                return jsonify({"mensaje": salida}), 500
+    # error en  la conexion 
+    else:
+        return jsonify({'status': 'error', 'mensaje': 'Error al consultar la base de datos'}), 500
+
+

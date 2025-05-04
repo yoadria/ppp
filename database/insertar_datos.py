@@ -19,11 +19,11 @@ def nuevo_asistente(conn, datos):
             (datos["nombre"], datos["codigo"])
         )
         conn.commit()
-        _logging.info('Asistente creado con exito')
+        _logging.debug('Asistente creado con exito')
         return {'exito': True, 'mensaje':'Asistente creada con exito'}
 
     except pymysql.Error as e :
-        _logging.error(f'Error al crear asistente: {e}')
+        _logging.debug(f'Error al crear asistente: {e}')
         return {'exito': False, 'mensaje':e}
     finally:
         cursor.close()
@@ -42,10 +42,10 @@ def nueva_habitacion(conn, datos):
             (datos["numero"], datos["planta"])
         )
         conn.commit()
-        _logging.info('Habitacion creada con exito')
+        _logging.debug('Habitacion creada con exito')
         return {'exito': True, 'mensaje':'Habitacion creada con exito'}
     except pymysql.Error as e:
-        _logging.error(f'Error al crear habitacion: {e}')
+        _logging.debug(f'Error al crear habitacion: {e}')
         return {'exito': False, 'mensaje':e}
     finally:
         cursor.close()
@@ -64,11 +64,30 @@ def nueva_cama(conn, datos):
         (datos["codigo"], datos["id_habitacion"])
         )
         conn.commit()
-        _logging.info('Cama creada con exito')
+        _logging.debug('Cama creada con exito')
         return {'exito': True,'mensaje':'Cama creada con exito'}
     
     except pymysql.Error as e:
-        _logging.error(f'Error al crear cama: {e}')
+        _logging.debug(f'Error al crear cama: {e}')
         return {'exito': False, 'mensaje':e}
+    finally:
+        cursor.close()
+
+def crear_llamada(conn, codigo_cama):
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            '''
+            INSERT INTO llamada (codigo_cama)
+            VALUES (%s)
+            ''',
+            (codigo_cama)
+        )
+        conn.commit()
+        _logging.debug('llamada creada con exito')
+        return {'exito': True, 'mensaje': 'llamada creada con exito'}
+    except pymysql.Error as e:
+        _logging.debug('Error al crear llamada: %s', e)
+        return {'exito': False, 'mensaje': e}
     finally:
         cursor.close()

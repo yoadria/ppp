@@ -8,6 +8,7 @@ services:
       MYSQL_DATABASE: hospital_call
       MYSQL_USER: admin
       MYSQL_PASSWORD: admin
+      TZ: Europe/London
     ports:
       - "3306:3306"
     volumes:
@@ -42,10 +43,18 @@ services:
       - DB_USER=admin
       - DB_PASSWORD=admin
       - DB_NAME=hospital_call
+      - WDB_SOCKET_SERVER=wdb
+      - WDB_NO_BROWSER_AUTO_OPEN=True
     depends_on:
       - mariadb
     volumes:
       - .:/ppp
+
+  wdb:
+    image: kozea/wdb
+    ports:
+      - "127.0.0.1:5001:1984"
+    init: true
 
 volumes:
   mariadb_data:
