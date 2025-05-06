@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, jsonify, request
 from database.conexion import get_db_connection
 from database.insertar_datos import *
 from database.solicitar_datos import *
-from .pushover_app import enviar_notificacion_llamada
+from .pushover_app import *
 from database.actualizar_datos import *
 import logging
 
@@ -22,6 +22,7 @@ def index():
 
 @main.route('/panel_habitacion')
 def panel_habitacion():
+    #import wdb; wdb.set_trace()
     conn = get_db_connection()
     lampara = get_lampara(conn, '101A')
     return render_template('panelhab.html', lampara=lampara)
@@ -120,6 +121,8 @@ def llamada(habitacion, cama):
             if salida['exito']:
                 receipt_id = enviar_notificacion_llamada(habitacion, cama)
                 salida_actualizar = actualizar_receip_llamada(conn, cama, receipt_id)
+                _logging.debug(salida_actualizar)
+
                 _logging.debug("ID de respuesta: %s", receipt_id)
                 return jsonify({'mensaje': salida}), 200
             #error al crear la llamda
@@ -130,3 +133,23 @@ def llamada(habitacion, cama):
         return jsonify({'status': 'error', 'mensaje': 'Error al consultar la base de datos'}), 500
 
 
+@main.route('/presencia/<int:habitacion>/<string:cama>', methods=['GET'])
+def presencia(habitacion, cama):
+    conn = get_db_connection()
+    existe_llamada = get_existe_llamada(conn, cama)
+    # se realiza consulta con exito
+    if existe_llamada['exito']: 
+        # hay una llamada activa no hace nada   
+        if existe_llamada['mensaje'] != None:
+            # import wdb; wdb.set_trace()
+            _logging.debug("hay llamada en espera se procede a cerrar")
+            receip_id = existe_llamada['mensaje']['receip_id']
+            codigo_asistente = callback_pushover(receip_id)
+            id_asistente = get_id_asistente(conn, codigo_asistente); id_asistente = id_asistente['mensaje']['id']
+            datos_presencia = {'id_llamada': existe_llamada['mensaje']['id'], 'id_asistente': id_asistente}
+            salida = nueva_presencia(conn, datos_presencia)
+            if salida['exito']:
+                _logging.debug("se ha cerrado la llamada")
+                return jsonify({'status': 'ok', 'mensaje': f'Llamada cerrada para habitación {habitacion}, cama {cama}'}), 200
+            else:
+                return jsonify({"mensaje": salida['mensaje']}), 500

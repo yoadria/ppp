@@ -9,13 +9,14 @@ _logging = logging.getLogger(__name__)
 
 def actualizar_receip_llamada(conn, codigo_cama, receip_id):
     try:
+        
         cursor = conn.cursor()
         cursor.execute(
             '''
             UPDATE llamada
-            SET receipt_id = %s
-            WHERE codigo_cama = %s and esatdo =0;
-            '''
+            SET receip_id = %s
+            WHERE codigo_cama = %s and estado =0;
+            ''',
             (receip_id, codigo_cama)
         )
         conn.commit()
@@ -24,5 +25,8 @@ def actualizar_receip_llamada(conn, codigo_cama, receip_id):
     except pymysql.Error as e:
         _logging.debug(f'Error al actualizar receipt id: {e}')
         return {'exito': False, 'mensaje': e}
+    except Exception as e:
+        _logging.debug(f'Error inesperado: {e}')
+        return {'exito': False, 'mensaje':e}
     finally:
         cursor.close()

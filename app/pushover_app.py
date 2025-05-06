@@ -61,7 +61,6 @@ def enviar_notificacion_llamada(habitacion, cama):
     _logging.debug(f"Enviando datos a Pushover: {data}")
     # Intenta enviar la notificación
     try:
-        # Es buena idea añadir un timeout a la petición
         response = requests.post(
             "https://api.pushover.net/1/messages.json",
             data=data,
@@ -101,3 +100,27 @@ def enviar_notificacion_llamada(habitacion, cama):
             _logging.error(f"   Detalle del error de API Pushover: {error_detalle}")
         return None # Indicar fallo
 
+
+def callback_pushover(receipts):
+
+
+    try:
+        response = requests.get(
+            'https://api.pushover.net/1/receipts/%s.json?token=%s' % (receipts, API_TOKEN),
+            timeout=15
+        )
+
+        response.raise_for_status()
+        respuesta_json = response.json()
+        acknowledged_by_device = respuesta_json['acknowledged_by_device']
+        _logging.debug(f"Respuesta de Pushover: {respuesta_json}")
+        return acknowledged_by_device
+    except requests.exceptions.RequestException as e:
+        _logging.error(f"❌ Error al consultar el estado del recibo: {e}")
+        return None
+    except json.JSONDecodeError:
+        _logging.error("❌ Error al decodificar la respuesta JSON")
+        return None
+    except Exception as e:
+        _logging.error(f"❌ Error inesperado: {e}")
+        return None

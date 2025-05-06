@@ -33,9 +33,31 @@ def get_lampara(conn,codigo_cama ):
             ''',
             (codigo_cama,)
         )
-        return cursor.fetchone() # se devuelve el resultado de la consulta
+        salida = cursor.fetchone()
+        return salida['lampara'] # se devuelve el resultado de la consulta
     except pymysql.Error as e:
         return e
+    finally:
+        if cursor:
+            cursor.close()
+
+def get_id_asistente (conn, codigo_acceso):
+    
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            '''
+            SELECT id
+            FROM asistente
+            WHERE codigo_acceso = %s;
+            ''',
+            (codigo_acceso,)
+        )
+
+        resultado = cursor.fetchone()
+        return {"exito":True, "mensaje": resultado}
+    except pymysql.Error as e:
+        return {"exito":False, "mensaje":e}
     finally:
         if cursor:
             cursor.close()

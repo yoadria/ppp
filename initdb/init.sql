@@ -60,3 +60,16 @@ BEGIN
     END IF;
 END $$
 DELIMITER ;
+
+DELIMITER $$
+
+CREATE TRIGGER actualizar_estado_llamada
+AFTER INSERT ON presencia
+FOR EACH ROW
+BEGIN
+    UPDATE llamada
+    SET estado = 1
+    WHERE id = NEW.id_llamada;
+END $$
+
+DELIMITER ;

@@ -91,3 +91,25 @@ def crear_llamada(conn, codigo_cama):
         return {'exito': False, 'mensaje': e}
     finally:
         cursor.close()
+
+def nueva_presencia(conn, datos):
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            '''
+            INSERT INTO presencia (id_llamada, id_asistente)
+            VALUES (%s,%s)
+            ''',
+            (datos["id_llamada"], datos["id_asistente"])
+        )
+        conn.commit()
+        _logging.debug('presencia creada con exito')
+        return {'exito': True, 'mensaje': 'precensia creada con exito'}
+    except pymysql.Error as e:
+        _logging.debug('Error al crear llamada: %s', e)
+        return {'exito': False, 'mensaje': e}
+    except Exception as e:
+        _logging.debug('Error inesperado: %s', e)
+        return {'exito': False, 'mensaje': e}
+    finally:
+        cursor.close()
