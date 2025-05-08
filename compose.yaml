@@ -36,9 +36,12 @@ services:
     restart: always
     ports:
       - "5000:5000"
+    command: ["flask", "run", "--host=0.0.0.0", "--port=5000"]
     environment:
       - FLASK_APP=main.py
-      - FLASK_ENV=development  # Esto activa el modo desarrollo
+      # - FLASK_ENV=development  # Esto activa el modo desarrollo
+      - FLASK_DEBUG=1
+      - PYTHONDONTWRITEBYTECODE=1
       - DB_HOST=mariadb
       - DB_USER=admin
       - DB_PASSWORD=admin

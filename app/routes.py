@@ -50,6 +50,10 @@ def crear_asistente():
     else:
        
         return jsonify({"mensaje": salida}), 500
+    
+@main.route('/formulario/asistente')
+def formulario_asistente():
+    return render_template('form_asistente.html')
 
 # ruta para crear habitacion post    
 @main.route('/api/habitacion', methods=['POST'])
