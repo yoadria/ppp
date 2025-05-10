@@ -55,6 +55,14 @@ def crear_asistente():
 def formulario_asistente():
     return render_template('form_asistente.html')
 
+@main.route('/formulario/habitacion')
+def formulario_habitacion():
+    return render_template('form_habitacion_cama.html')
+
+@main.route('/dashboard/historico')
+def dashboard_historico():
+    return render_template('historico.html')
+
 # ruta para crear habitacion post    
 @main.route('/api/habitacion', methods=['POST'])
 def crear_habitacion():

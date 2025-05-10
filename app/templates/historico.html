@@ -1,0 +1,108 @@
+{% extends "index.html" %}
+
+{% block page_title %}Dashboard de Llamadas Activas{% endblock %}
+
+{% block head_extra %}
+    {{ super() }}
+    <!-- Opcional: Refrescar la página cada 15 segundos para actualizar el dashboard -->
+    <!-- <meta http-equiv="refresh" content="15"> -->
+    <!-- Para una mejor UX, considera usar JavaScript para actualizar la tabla sin recargar la página (AJAX/Fetch) -->
+{% endblock %}
+
+{% block content_area %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-semibold text-gray-800">Llamadas Activas</h1>
+    <!-- Podrías añadir un botón para refrescar manualmente si no usas auto-refresh -->
+    <!-- <button onclick="location.reload();" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Refrescar</button> -->
+</div>
+
+{% if llamadas_activas %}
+    <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        ID Llamada
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Hora de Llamada
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Cama
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Habitación
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Planta
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Lámpara
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for llamada in llamadas_activas %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {{ llamada.id_llamada }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ llamada.hora_llamada.strftime('%Y-%m-%d %H:%M:%S') if llamada.hora_llamada else 'N/A' }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ llamada.codigo_cama }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ llamada.numero_habitacion }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ llamada.planta_habitacion }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        {% if llamada.lampara_encendida %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                Encendida
+                            </span>
+                        {% else %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                Apagada
+                            </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded-md" role="alert">
+        <p class="font-bold">Información</p>
+        <p>No hay llamadas activas en este momento.</p>
+    </div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    // Opcional: Lógica JavaScript para refrescar la tabla usando AJAX/Fetch
+    // Esto es más avanzado que el meta refresh y proporciona una mejor experiencia de usuario.
+    // function fetchActiveCalls() {
+    //     fetch("{{ url_for('main.dashboard_activas_json') }}") // Necesitarías una ruta que devuelva JSON
+    //         .then(response => response.json())
+    //         .then(data => {
+    //             // Lógica para actualizar el contenido de la tabla con 'data'
+    //             console.log(data);
+    //             // Aquí reconstruirías las filas de la tabla o usarías una librería de templating JS
+    //         })
+    //         .catch(error => console.error('Error fetching active calls:', error));
+    // }
+
+    // if (document.visibilityState !== 'hidden') { // Solo si la pestaña está activa
+    //     // setInterval(fetchActiveCalls, 10000); // Llama cada 10 segundos
+    //     // fetchActiveCalls(); // Carga inicial
+    // }
+</script>
+{% endblock %}
