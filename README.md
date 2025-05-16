@@ -101,7 +101,7 @@ Este proyecto es un sistema de gestión de llamadas y asistencias para habitacio
    USER_KEY=tu_user_key_pushover
 
    # Dirección IP del relé
-   IP_RELE=tu_ip_rele
+   IP_RELE=tu_ip_rele (en este caso seria la ip de tu local)
    ```
       > **Nota:** si no se hace esto correctamente (por ejemplo, si faltan variables o hay errores de sintaxis en el archivo `.env`), los servicios pueden fallar al iniciar o no podrán conectarse correctamente a la base de datos y a Pushover.
    
