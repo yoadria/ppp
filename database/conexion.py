@@ -3,6 +3,7 @@ import pymysql
 import logging
 import os
 import time
+
 logging.basicConfig(
     level=logging.DEBUG,  # Muestra los logs de nivel DEBUG y superior
     format='%(asctime)s - %(levelname)s - %(message)s'  # Formato para mostrar los logs
@@ -12,10 +13,10 @@ _logging = logging.getLogger(__name__)
 
 
 # Configuración de la base de datos (ajusta con tus credenciales de Docker Compose)
-DB_HOST = os.environ.get('DB_HOST', 'mariadb')
-DB_USER = os.environ.get('DB_USER', 'admin')
-DB_PASSWORD = os.environ.get('DB_PASSWORD', 'admin')
-DB_NAME = os.environ.get('DB_NAME', 'hospital_call')
+DB_HOST = os.environ.get('DB_HOST')
+DB_USER = os.environ.get('DB_USER')
+DB_PASSWORD = os.environ.get('DB_PASSWORD')
+DB_NAME = os.environ.get('DB_NAME')
 
 
     

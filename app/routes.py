@@ -195,6 +195,7 @@ def presencia(habitacion, cama):
 
 @main.route('/llamada/atendida')
 def atendida():
+    import wdb;wdb.set_trace()
     habitacion = request.args.get('habitacion')
     cama = request.args.get('cama')
     nombre = request.cookies.get('nombre_asistente')

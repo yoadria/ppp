@@ -74,12 +74,44 @@ Este proyecto es un sistema de gestión de llamadas y asistencias para habitacio
    cd ppp
    ```
 
-2. Levanta los servicios con Docker Compose:
+2. Prepara tus credenciales y variables de entorno:
+   ```sh
+   Antes de levantar los servicios, es necesario crear un archivo llamado `.env` en la raíz del proyecto. 
+   En este archivo debes definir las credenciales de la base de datos, las claves de Pushover y otras variables necesarias para la configuración de los servicios.
+
+   No incluyas tus credenciales reales en el repositorio. El archivo `.env` debe estar en tu máquina local y puedes usar el siguiente ejemplo como referencia:
+   ```
+
+   **Ejemplo de archivo `.env`:**
+   ```
+   # Credenciales de la base de datos
+   DB_HOST=mariadb
+   DB_USER=tu_usuario
+   DB_PASSWORD=tu_contraseña
+   DB_NAME=nombre_base_datos
+
+   # Credenciales de MariaDB para el contenedor
+   MYSQL_ROOT_PASSWORD=tu_root_password
+   MYSQL_DATABASE=nombre_base_datos
+   MYSQL_USER=tu_usuario
+   MYSQL_PASSWORD=tu_contraseña
+
+   # Variables para Pushover
+   API_TOKEN=tu_api_token_pushover
+   USER_KEY=tu_user_key_pushover
+
+   # Dirección IP del relé
+   IP_RELE=tu_ip_rele
+   ```
+      > **Nota:** si no se hace esto correctamente (por ejemplo, si faltan variables o hay errores de sintaxis en el archivo `.env`), los servicios pueden fallar al iniciar o no podrán conectarse correctamente a la base de datos y a Pushover.
+   
+
+3. Levanta los servicios con Docker Compose:
    ```sh
    docker compose up --build
    ```
 
-3. Accede a la aplicación web:
+4. Accede a la aplicación web:
    - [http://localhost](http://localhost) (interfaz principal)
    - [http://localhost:8080](http://localhost:8080) (Adminer para la base de datos)
 

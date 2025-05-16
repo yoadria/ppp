@@ -4,10 +4,10 @@ services:
     container_name: mariadb
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_DATABASE: hospital_call
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: admin
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       TZ: Europe/London
     ports:
       - "3306:3306"
@@ -39,13 +39,15 @@ services:
     command: ["flask", "run", "--host=0.0.0.0", "--port=5000"]
     environment:
       - FLASK_APP=main.py
-      # - FLASK_ENV=development  # Esto activa el modo desarrollo
       - FLASK_DEBUG=1
       - PYTHONDONTWRITEBYTECODE=1
-      - DB_HOST=mariadb
-      - DB_USER=admin
-      - DB_PASSWORD=admin
-      - DB_NAME=hospital_call
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - API_TOKEN=${API_TOKEN}
+      - USER_KEY=${USER_KEY}
+      - IP_RELE=${IP_RELE}
       - WDB_SOCKET_SERVER=wdb
       - WDB_NO_BROWSER_AUTO_OPEN=True
     depends_on:

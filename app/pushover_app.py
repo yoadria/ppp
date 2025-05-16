@@ -1,7 +1,7 @@
 import requests
 import logging
 import json
-
+import os
 logging.basicConfig(
     level=logging.DEBUG, 
     format='%(asctime)s - %(levelname)s - %(message)s' 
@@ -9,9 +9,9 @@ logging.basicConfig(
 
 _logging = logging.getLogger(__name__)
 
-API_TOKEN = 'aihav4mdzxeey528gkmmaknt75nf81' 
-USER_KEY = 'usi8tt5hzn9utn8wv6sq8higcn4pgb'   
-
+API_TOKEN = os.environ.get('API_TOKEN')
+USER_KEY = os.environ.get('USER_KEY')   
+IP_RELE = os.environ.get('IP_RELE')
 
 SEGUNDOS_REINTENTO = 30  # Ejemplo: Reintentar cada 60 segundos
 
@@ -22,7 +22,7 @@ def enviar_notificacion_llamada(habitacion, cama):
     Envia una notificación a Pushover indicando una llamada
     desde una habitación y cama específicas.
     """
-    url_atender = f"http://192.168.1.134:5000/llamada/atendida?habitacion={habitacion}&cama={cama}"
+    url_atender = f"http://{IP_RELE}:5000/llamada/atendida?habitacion={habitacion}&cama={cama}"
     mensaje = (
         f"<p>Llamada recibida desde la habitación <font color='red'><b>{habitacion}</b></font> y cama <font color='red'><b>{cama}</b></font>.</p>"
         f"<a href='{url_atender}'>Atender soliciud de asistencia</a>"
