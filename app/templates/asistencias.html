@@ -8,6 +8,38 @@
     {% block head_extra %}{% endblock %}
 </head>
 <body class="bg-gray-100 font-sans leading-normal tracking-normal flex flex-col min-h-screen">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div id="toast-flash" class="fixed top-5 right-5" style="z-index:60;">
+        {% for category, message in messages %}
+            <div class="mb-2 px-4 py-3 rounded shadow-lg text-white animate-fade-in-out
+                {% if category == 'success' %} bg-green-600
+                {% elif category == 'error' or category == 'danger' %} bg-red-600
+                {% elif category == 'warning' %} bg-yellow-500 text-gray-900
+                {% else %} bg-blue-600 {% endif %}">
+            {{ message }}
+            </div>
+        {% endfor %}
+        </div>
+        <script>
+            setTimeout(function() {
+            var toast = document.getElementById('toast-flash');
+            if (toast) { toast.style.display = 'none'; }
+            }, 3000);
+        </script>
+        <style>
+            @keyframes fade-in-out {
+            0% { opacity: 0; transform: translateY(-20px);}
+            10% { opacity: 1; transform: translateY(0);}
+            90% { opacity: 1; transform: translateY(0);}
+            100% { opacity: 0; transform: translateY(-20px);}
+            }
+            .animate-fade-in-out {
+            animation: fade-in-out 3s;
+            }
+        </style>
+        {% endif %}
+    {% endwith %}
     <header class="bg-gray-800 text-white shadow-lg w-full fixed top-0 left-0 right-0 z-50">
         <div class="flex flex-wrap justify-between items-center w-full px-4 py-4 m-0">
             <div class="logo w-full sm:w-auto mb-2 sm:mb-0">

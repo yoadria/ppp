@@ -75,12 +75,12 @@ Este proyecto es un sistema de gestión de llamadas y asistencias para habitacio
    ```
 
 2. Prepara tus credenciales y variables de entorno:
-   ```sh
+   
    Antes de levantar los servicios, es necesario crear un archivo llamado `.env` en la raíz del proyecto. 
    En este archivo debes definir las credenciales de la base de datos, las claves de Pushover y otras variables necesarias para la configuración de los servicios.
 
    No incluyas tus credenciales reales en el repositorio. El archivo `.env` debe estar en tu máquina local y puedes usar el siguiente ejemplo como referencia:
-   ```
+   
 
    **Ejemplo de archivo `.env`:**
    ```
@@ -114,6 +114,7 @@ Este proyecto es un sistema de gestión de llamadas y asistencias para habitacio
 4. Accede a la aplicación web:
    - [http://localhost](http://localhost) (interfaz principal)
    - [http://localhost:8080](http://localhost:8080) (Adminer para la base de datos)
+   - [http://localhost:5001](http://localhost:5001) (Debug wdb de python)
 
 ## Uso básico
 
