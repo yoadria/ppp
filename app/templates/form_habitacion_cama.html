@@ -22,7 +22,7 @@
                    placeholder="Ej: 1 (número entero)">
         </div>
 
-        <!-- <hr class="my-6">
+        <hr class="my-6">
 
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-semibold text-gray-700">Camas de la Habitación</h2>
@@ -34,32 +34,9 @@
 
         {# Contenedor para las tarjetas de cama. Usaremos Grid aquí #}
         <div id="camas-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
-            {# Aquí se añadirán dinámicamente los campos para las camas #}
-            
-            {# Tus ejemplos estáticos originales, adaptados a la estructura de tarjeta y listos para ser manejados por JS #}
-            {# Estos serían ELIMINADOS si quieres que el JS los cree desde cero, o mantenidos si quieres que el JS los "adopte" #}
-            <div class="cama-entry bg-gray-50 p-4 rounded border border-gray-200 shadow-sm">
-                <div class="flex items-center mb-2"> {# Para alinear label e input si quieres, o simplemente label arriba #}
-                    <label for="cama_identificador_0" class="block text-gray-700 text-sm font-bold mr-2 shrink-0">Cama A:</label>
-                    <input type="text" name="camas[0][identificador]" id="cama_identificador_0" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ej: A, Principal" required>
-                </div>
-                <button type="button" class="w-full mt-2 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-xs remove-cama-btn">
-                    Eliminar Cama
-                </button>
-            </div>
+ 
 
-            <div class="cama-entry bg-gray-50 p-4 rounded border border-gray-200 shadow-sm">
-                 <div class="flex items-center mb-2">
-                    <label for="cama_identificador_1" class="block text-gray-700 text-sm font-bold mr-2 shrink-0">Cama B:</label>
-                    <input type="text" name="camas[1][identificador]" id="cama_identificador_1" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ej: B, Secundaria" required>
-                </div>
-                <button type="button" class="w-full mt-2 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-xs remove-cama-btn">
-                    Eliminar Cama
-                </button>
-            </div>
-            {# Fin de tus ejemplos estáticos adaptados #}
-
-        </div> -->
+        </div>
 
         <div class="flex items-center justify-between">
             <button type="submit" 
@@ -74,5 +51,62 @@
             </a>
         </div>
     </form>
+
+
+{% endblock %}
+
+{% block scripts %}
+    <script>
+    // Letras para las camas
+    const letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+    let camaCount = 0;
+
+    // Función para crear el div de una cama
+    function crearCamaDiv(idx) {
+        const div = document.createElement('div');
+        div.className = "cama-entry bg-gray-50 p-4 rounded border border-gray-200 shadow-sm flex items-center justify-between";
+        div.innerHTML = `
+            <span class="block text-gray-700 text-lg font-bold">Cama ${letras[idx]}:</span>
+            <input type="hidden" name="camas[${idx}][identificador]" value="${letras[idx]}">
+            <button type="button" class="ml-4 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-xs remove-cama-btn">
+                Eliminar
+            </button>
+        `;
+        return div;
+    }
+
+    // Añadir dos camas por defecto al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        const camasContainer = document.getElementById('camas-container');
+        for (let i = 0; i < 2; i++) {
+            camasContainer.appendChild(crearCamaDiv(i));
+            camaCount++;
+        }
+    });
+
+    // Lógica para añadir cama
+    document.getElementById('add-cama-btn').addEventListener('click', function() {
+        const camasContainer = document.getElementById('camas-container');
+        if (camaCount < letras.length) {
+            camasContainer.appendChild(crearCamaDiv(camaCount));
+            camaCount++;
+        }
+    });
+
+    // Lógica para eliminar cama y reordenar letras
+    document.getElementById('camas-container').addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-cama-btn')) {
+            e.target.parentElement.remove();
+            // Recalcular los índices y nombres de los inputs
+            const camas = document.querySelectorAll('.cama-entry');
+            camaCount = camas.length;
+            camas.forEach((div, idx) => {
+                div.querySelector('span').textContent = `Cama ${letras[idx]}:`;
+                div.querySelector('input[type="hidden"]').name = `camas[${idx}][identificador]`;
+                div.querySelector('input[type="hidden"]').value = letras[idx];
+            });
+        }
+    });
+    </script>
 {% endblock %}
 

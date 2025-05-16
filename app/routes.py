@@ -9,14 +9,14 @@ import logging
 
 
 logging.basicConfig(
-    level=logging.DEBUG,  # Muestra los logs de nivel DEBUG y superior
-    format='%(asctime)s - %(levelname)s - %(message)s'  # Formato para mostrar los logs
+    level=logging.DEBUG, 
+    format='%(asctime)s - %(levelname)s - %(message)s' 
 )
 
 _logging = logging.getLogger(__name__)
 main = Blueprint('main', __name__)
 
-# ruta de inicio
+
 @main.route('/')
 def index():
     return render_template('index.html')
@@ -47,7 +47,7 @@ def enrolar():
 
         conn = get_db_connection()
         try:
-            salida = get_asistente(conn, nombre, codigo)
+            salida = get_asistente(conn, nombre.upper(), codigo)
             if salida['mensaje'] is None:
                 flash('La clave o el nombre no son correctos', 'error')
                 return redirect(url_for('main.enrolar'))
@@ -71,8 +71,11 @@ def formulario_asistente():
         if not nombre or not codigo:
             flash('Uno de los campos esta vacio', 'warning')
             return redirect(url_for('main.formulario_asistente'))
+        if len(codigo.replace(" ", "")) != 6:
+            flash('El codigo deve tener 6 caracteres', 'warning')
+            return redirect(url_for('main.formulario_asistente'))           
         
-        datos = {'nombre': nombre, 'codigo': codigo}
+        datos = {'nombre': nombre.upper(), 'codigo': codigo}
         conn = get_db_connection()
         try:
             salida = nuevo_asistente(conn, datos)
@@ -94,64 +97,35 @@ def formulario_habitacion():
         if not planta or not num_habitacion:
             flash('Se debe marcar una planta y un numero de habitacion', 'warning')
             return redirect(url_for('main.formulario_habitacion'))
-        
-        datos = {'numero': num_habitacion, 'planta':planta}
+        camas = []
+        for key in request.form:
+            if key.startswith('camas') and key.endswith('[identificador]'):
+                camas.append(request.form[key])
         conn = get_db_connection()
-        salida = nueva_habitacion(conn, datos)
-
-        if salida['exito']:    
-            flash(salida['mensaje'], 'success')
-            return redirect(url_for('main.index'))
-        else:
-            flash(salida['mensaje'], 'error')
+        try:
+            existe_habitacion = get_id_habitacion(conn, planta, num_habitacion)
+            if existe_habitacion:
+                flash('Ya existe la habitacion', 'warning')
+                return redirect(url_for('main.formulario_habitacion'))
+            salida = nueva_habitacion(conn, planta, num_habitacion)
+            if salida:
+                id_habitacion = get_id_habitacion(conn, planta, num_habitacion)
+                for cama in camas:
+                    new_cama = nueva_cama(conn,cama, id_habitacion)
+                flash('Habitacion y camas creadas con exito', 'success')
+                return redirect(url_for('main.index'))
+            flash('Problemas al crear la habitacion o la cama', 'error')
             return redirect(url_for('main.formulario_habitacion'))
+        except Exception as e:
+            flash(f'Problemas con la base de datos. {e}', 'error')
+            _logging.info(f'Error... {e}')
+            return redirect(url_for('main.formulario_habitacion')) 
+        finally:
+            conn.close()
+
         
     return render_template('form_habitacion_cama.html')
 
-# ruta para crear habitacion post    
-@main.route('/api/habitacion', methods=['POST'])
-def crear_habitacion():
-    data = request.get_json()
-    numero = data.get('numero')
-    planta = data.get('planta')
-
-    if not numero or not planta:
-        return jsonify({"mensaje": "Faltan datos"}), 400
-
-    datos = {'numero': numero, 'planta':planta}
-    conn = get_db_connection()
-    salida = nueva_habitacion(conn, datos)
-
-    if salida['exito']:
-        
-        return jsonify({"mensaje": salida}), 201
-    else:
-       
-        return jsonify({"mensaje": salida}), 500
-    
-
-# ruta para crear cama post    
-@main.route('/api/cama', methods=['POST'])
-def crear_cama():
-    data = request.get_json()
-    codigo = data.get('codigo')
-    id_habitacion = data.get('id_habitacion')
-
-    if not codigo or not id_habitacion:
-        return jsonify({"mensaje": "Faltan datos"}), 400
-
-    
-    datos = {'codigo': codigo, 'id_habitacion':id_habitacion}
-    conn = get_db_connection()
-    salida = nueva_cama(conn, datos)
-
-    if salida['exito']:
-       
-        return jsonify({"mensaje": salida}), 201
-    else:
-        
-        return jsonify({"mensaje": salida}), 500
-    
 
 
 
@@ -200,7 +174,7 @@ def llamada(habitacion, cama):
 
 @main.route('/presencia/<int:habitacion>/<string:cama>', methods=['GET'])
 def presencia(habitacion, cama):
-    # import wdb;wdb.set_trace()
+  
     conn = get_db_connection()
     try:
         id_llamada = get_id_llamada_aceptada(conn,habitacion, cama)
@@ -230,7 +204,7 @@ def atendida():
     try:
         id_llamada = get_id_llamada(conn, habitacion, cama)
         if not id_llamada:
-            return jsonify({'mensaje': f'Llamada ya fue atendida'}), 409
+            return jsonify({'mensaje': f'Llamada ya fue atendida por otra persona'}), 409
         asistente = get_asistente(conn, nombre, codigo)
         id_asistente = asistente['mensaje']['id']
         salida = llamada_atendida(conn, id_asistente, id_llamada)
@@ -239,7 +213,7 @@ def atendida():
                 requests.get(f'http://localhost:5000/lampara/{habitacion}/{cama}/on')
             except Exception as e:
                 _logging.error(f'Error encendiendo lámpara: {e}')            
-            return jsonify({'mensaje': f'llamada atendida'}), 200
+            return jsonify({'mensaje': f'Llamada atendida por ti'}), 200
        
     finally:
         conn.close()
@@ -271,5 +245,15 @@ def lampara_off(habitacion, cama):
             cursor.close()
             return jsonify({"mensaje": "Lámpara apagada"}), 200
         return jsonify({"mensaje": "No se encontró la cama"}), 404
+    finally:
+        conn.close()
+
+@main.route('/asistencias')
+def asistencias():
+    conn = get_db_connection()
+    try:
+        historico = get_historico_completo(conn, None, '24h', None)
+        llamadas = historico['mensaje'] if historico['exito'] else []
+        return render_template('asistencias.html', llamadas=llamadas)
     finally:
         conn.close()

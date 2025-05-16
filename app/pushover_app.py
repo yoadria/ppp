@@ -9,8 +9,8 @@ logging.basicConfig(
 
 _logging = logging.getLogger(__name__)
 
-API_TOKEN = 'aihav4mdzxeey528gkmmaknt75nf81'  # Token de tu Aplicación Pushover
-USER_KEY = 'usi8tt5hzn9utn8wv6sq8higcn4pgb'   # Tu User Key de Pushover
+API_TOKEN = 'aihav4mdzxeey528gkmmaknt75nf81' 
+USER_KEY = 'usi8tt5hzn9utn8wv6sq8higcn4pgb'   
 
 
 SEGUNDOS_REINTENTO = 30  # Ejemplo: Reintentar cada 60 segundos
@@ -22,7 +22,7 @@ def enviar_notificacion_llamada(habitacion, cama):
     Envia una notificación a Pushover indicando una llamada
     desde una habitación y cama específicas.
     """
-    url_atender = f"http://192.168.0.103:5000/llamada/atendida?habitacion={habitacion}&cama={cama}"
+    url_atender = f"http://192.168.1.134:5000/llamada/atendida?habitacion={habitacion}&cama={cama}"
     mensaje = (
         f"<p>Llamada recibida desde la habitación <font color='red'><b>{habitacion}</b></font> y cama <font color='red'><b>{cama}</b></font>.</p>"
         f"<a href='{url_atender}'>Atender soliciud de asistencia</a>"

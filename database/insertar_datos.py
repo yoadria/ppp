@@ -29,7 +29,7 @@ def nuevo_asistente(conn, datos):
         cursor.close()
     
 
-def nueva_habitacion(conn, datos):
+def nueva_habitacion(conn, planta, numero):
     '''se inserta una nueva habitacion a la base de datos'''
     try:
         cursor = conn.cursor()
@@ -39,19 +39,19 @@ def nueva_habitacion(conn, datos):
             INSERT INTO habitacion (numero, planta)
             VALUES (%s,%s)
             ''',
-            (datos["numero"], datos["planta"])
+            (numero, planta)
         )
         conn.commit()
         _logging.debug('Habitacion creada con exito')
-        return {'exito': True, 'mensaje':'Habitacion creada con exito'}
+        return True
     except pymysql.Error as e:
         _logging.debug(f'Error al crear habitacion: {e}')
-        return {'exito': False, 'mensaje':e}
+        return False
     finally:
         cursor.close()
 
 
-def nueva_cama(conn, datos):
+def nueva_cama(conn, codigo, id_habitacion):
     '''se inserta una nueva cama a la base de datos'''
     try:
         cursor = conn.cursor()
@@ -61,15 +61,15 @@ def nueva_cama(conn, datos):
         INSERT INTO cama (codigo, id_habitacion)
         VALUES (%s,%s)
         ''',
-        (datos["codigo"], datos["id_habitacion"])
+        (codigo, id_habitacion)
         )
         conn.commit()
         _logging.debug('Cama creada con exito')
-        return {'exito': True,'mensaje':'Cama creada con exito'}
+        return True
     
     except pymysql.Error as e:
         _logging.debug(f'Error al crear cama: {e}')
-        return {'exito': False, 'mensaje':e}
+        return False
     finally:
         cursor.close()
 

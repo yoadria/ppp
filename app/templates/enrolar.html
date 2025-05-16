@@ -1,4 +1,4 @@
-{% extends "index.html" %} 
+{% extends "asistencias.html" %} 
 {% block page_title %}Nuevo Turno{% endblock %}
 
 {% block content_area %}
@@ -26,25 +26,51 @@
                     class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                 Login
             </button>
-            
-            {# Este url_for('main.index') debería funcionar porque la ruta index existe #}
-            <a href="{{ url_for('main.enrolar') }}" 
-               class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
-                Cancelar
-            </a>
+
+            <button type="button" id="finalizar-turno"
+                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2">
+                Finalizar turno
+            </button>
         </div>
     </form>
 {% endblock %}
 {% block scripts %}
-<script>
-document.querySelector('form').addEventListener('submit', function(e) {
-    // Obtén los valores de los campos
-    const nombre = document.getElementById('nombre_asistente').value;
-    const codigo = document.getElementById('codigo_acceso_asistente').value;
+    <script>
+        function getCookie(nombre) {
+            const valor = `; ${document.cookie}`;
+            const partes = valor.split(`; ${nombre}=`);
+            if (partes.length === 2) return partes.pop().split(';').shift();
+            return null;
+        }
 
-    // Guarda en cookies (expira en 7 días)
-    document.cookie = `nombre_asistente=${encodeURIComponent(nombre)}; path=/; max-age=${60*60*24*7}`;
-    document.cookie = `codigo_acceso_asistente=${encodeURIComponent(codigo)}; path=/; max-age=${60*60*24*7}`;
-});
-</script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+            // Obtén los valores de los campos
+            let nombre = document.getElementById('nombre_asistente').value;
+            const codigo = document.getElementById('codigo_acceso_asistente').value;
+            nombre = nombre.toUpperCase();
+
+
+            document.cookie = `nombre_asistente=${encodeURIComponent(nombre)}; path=/; max-age=${60*60*24}`;
+            document.cookie = `codigo_acceso_asistente=${encodeURIComponent(codigo)}; path=/; max-age=${60*60*24}`;
+        });
+
+        // Función para borrar cookies
+        function borrarCookie(nombre) {
+            document.cookie = nombre + '=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+        }
+
+        document.getElementById('finalizar-turno').addEventListener('click', function() {
+            const inputNombre = document.getElementById('nombre_asistente').value.toUpperCase();
+            const inputCodigo = document.getElementById('codigo_acceso_asistente').value;
+            const nombreCookie = getCookie('nombre_asistente');
+            const codigoCookie = getCookie('codigo_acceso_asistente');
+            if (inputNombre === nombreCookie && inputCodigo === codigoCookie) {
+                borrarCookie('nombre_asistente');
+                borrarCookie('codigo_acceso_asistente');
+                alert('Turno finalizado.');
+            } else {
+                alert('Credenciales incorrectas.');
+            }
+        });
+    </script>
 {% endblock %}

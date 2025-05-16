@@ -187,3 +187,27 @@ def get_historico_completo(conn, asistente=None, rango_fecha=None, estado=None):
     finally:
         if cursor:
             cursor.close()
+
+
+def get_id_habitacion(conn, planta, numero):
+    try:
+
+        cursor = conn.cursor()
+        cursor.execute(
+            '''
+                SELECT id
+                FROM habitacion
+                WHERE numero = %s AND planta = %s;
+            ''',
+            (numero,planta)
+        )
+
+        id = cursor.fetchone()
+        if id:
+            return id['id']
+        else:
+            return False
+    except pymysql.Error as e:
+        return False
+    finally:
+        cursor.close
