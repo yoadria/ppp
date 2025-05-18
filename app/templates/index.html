@@ -9,8 +9,8 @@
 </head>
 <body class="bg-gray-100 font-sans leading-normal tracking-normal flex flex-col min-h-screen">
 
-    <header class="bg-gray-800 text-white shadow-lg">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+    <header class="bg-gray-800 text-white shadow-lg w-full">
+        <div class="w-full px-6 py-4 flex justify-between items-center">
             <div class="logo">
                 <!-- Este enlace apunta a la página actual (raíz), lo cual está bien -->
                 <a href="{{ url_for('main.index') }}" class="text-xl font-bold hover:text-gray-300">
@@ -64,9 +64,8 @@
             </ul>
         </aside>
 
-        <main class="main-content flex-1 bg-white p-6 rounded-lg shadow-md">
+        <main class="main-content flex-1 bg-white p-6 rounded-lg shadow-md mx-auto mt-24">
             {% block content_area %}
-                {# Contenido por defecto si ninguna "subpágina" se carga aquí #}
                 <h1 class="text-2xl font-semibold text-gray-800">Bienvenido al Panel de Control</h1>
                 <p class="text-gray-600 mt-2">
                     Selecciona una opción del menú lateral para comenzar.
