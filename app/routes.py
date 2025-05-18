@@ -134,9 +134,11 @@ def dashboard_historico():
     asistente = request.args.get('asistente')
     rango_fecha = request.args.get('rango_fecha') or "24h"
     estado = request.args.get('estado')
+    habitacion = request.args.get('habitacion')
+    cama = request.args.get('cama')
     conn = get_db_connection()
     try:
-        historico = get_historico_completo(conn, asistente, rango_fecha, estado)
+        historico = get_historico_completo(conn, asistente, rango_fecha, estado, habitacion, cama)
         llamadas = historico['mensaje'] if historico['exito'] else []
         return render_template('historico.html', llamadas=llamadas)
     finally:

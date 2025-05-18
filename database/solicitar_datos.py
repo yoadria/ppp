@@ -140,15 +140,17 @@ def get_lampara(conn, id):
         if cursor:
             cursor.close()
 
-def get_historico_completo(conn, asistente=None, rango_fecha=None, estado=None):
+def get_historico_completo(conn, asistente=None, rango_fecha=None, estado=None, habitacion=None, cama=None):
     """
     Devuelve el histórico completo de llamadas con filtros opcionales.
     """
     try:
-        cursor = conn.cursor()
+        cursor = conn.cursor(pymysql.cursors.DictCursor)
         query = '''
             SELECT 
                 l.id AS id_llamada,
+                h.numero AS habitacion,
+                c.codigo AS cama,
                 l.hora_llamada,
                 l.hora_atendida,
                 l.estado,
@@ -157,6 +159,8 @@ def get_historico_completo(conn, asistente=None, rango_fecha=None, estado=None):
             FROM llamada l
             LEFT JOIN asistente a ON l.id_asistente = a.id
             LEFT JOIN presencia p ON l.id = p.id_llamada
+            JOIN cama c ON l.id_cama = c.id
+            JOIN habitacion h ON c.id_habitacion = h.id
             WHERE 1=1
         '''
         params = []
@@ -167,6 +171,12 @@ def get_historico_completo(conn, asistente=None, rango_fecha=None, estado=None):
         if estado:
             query += " AND l.estado = %s"
             params.append(estado)
+        if habitacion:
+            query += " AND h.numero = %s"
+            params.append(habitacion)
+        if cama:
+            query += " AND c.codigo = %s"
+            params.append(cama)
         if rango_fecha and rango_fecha != "all":
             if rango_fecha == "24h":
                 query += " AND l.hora_llamada >= NOW() - INTERVAL 1 DAY"

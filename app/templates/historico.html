@@ -12,13 +12,28 @@
 {% block content_area %}
 <div class="flex justify-between items-center mb-6">
     <h1 class="text-3xl font-semibold text-gray-800">Histórico de Llamadas</h1>
+    <button type="button" onclick="exportTableToCSV('historico_llamadas.csv')"
+        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none">
+        Exportar a CSV
+    </button>
 </div>
+
 
 <!-- Apartado de filtros -->
 <form method="get" class="mb-6 flex flex-wrap gap-4 items-end">
     <div>
         <label for="asistente" class="block text-xs font-medium text-gray-700">Asistente</label>
         <input type="text" name="asistente" id="asistente" value="{{ request.args.get('asistente', '') }}"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+    </div>
+    <div>
+        <label for="habitacion" class="block text-xs font-medium text-gray-700">Habitación</label>
+        <input type="text" name="habitacion" id="habitacion" value="{{ request.args.get('habitacion', '') }}"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+    </div>
+    <div>
+        <label for="cama" class="block text-xs font-medium text-gray-700">Cama</label>
+        <input type="text" name="cama" id="cama" value="{{ request.args.get('cama', '') }}"
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
     </div>
     <div>
@@ -48,15 +63,18 @@
             Filtrar
         </button>
     </div>
+
 </form>
 <!-- Fin filtros -->
 
 {% if llamadas %}
-    <div class="overflow-x-auto bg-white shadow-md rounded-lg">
-        <table class="min-w-full divide-y divide-gray-200">
+    <div class="max-w-6xl mx-auto h-[70vh] min-h-[400px] overflow-x-auto overflow-y-auto bg-white shadow-md rounded-lg">
+        <table id="tabla-historico" class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID Llamada</th>
+
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Habitacion</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cama</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora Llamada</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora Atendida</th>
@@ -67,7 +85,8 @@
             <tbody class="bg-white divide-y divide-gray-200">
                 {% for llamada in llamadas %}
                 <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">{{ llamada.id_llamada }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">{{ llamada.habitacion }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">{{ llamada.cama }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">{{ llamada.hora_llamada }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">{{ llamada.estado or 'N/A' }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">{{ llamada.hora_atendida or 'N/A' }}</td>
@@ -84,4 +103,28 @@
         <p>No hay llamadas en el histórico.</p>
     </div>
 {% endif %}
+{% endblock %}
+{% block scripts %}
+    <script>
+    // Exportar tabla a CSV
+    function exportTableToCSV(filename) {
+        var csv = [];
+        var rows = document.querySelectorAll("#tabla-historico tr");
+        for (var i = 0; i < rows.length; i++) {
+            var row = [], cols = rows[i].querySelectorAll("th, td");
+            for (var j = 0; j < cols.length; j++)
+                row.push('"' + cols[j].innerText.replace(/"/g, '""') + '"');
+            csv.push(row.join(","));
+        }
+        // Descargar el archivo CSV
+        var csvFile = new Blob([csv.join("\n")], { type: "text/csv" });
+        var downloadLink = document.createElement("a");
+        downloadLink.download = filename;
+        downloadLink.href = window.URL.createObjectURL(csvFile);
+        downloadLink.style.display = "none";
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    }
+    </script>
 {% endblock %}
