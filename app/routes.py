@@ -5,8 +5,14 @@ from database.solicitar_datos import *
 from .pushover_app import *
 from database.actualizar_datos import *
 import requests
+import smtplib
+from email.message import EmailMessage
+import io
+import csv
 import logging
 
+MY_EMAIL = os.environ.get('MY_EMAIL')
+EMAIL_PASSWORD = os.environ.get('EMAIL_PASSWORD')   
 
 logging.basicConfig(
     level=logging.DEBUG, 
@@ -259,3 +265,34 @@ def asistencias():
         return render_template('asistencias.html', llamadas=llamadas)
     finally:
         conn.close()
+
+
+@main.route('/enviar_csv', methods=['POST'])
+def enviar_csv():
+    data = request.get_json()
+    correo = data.get('correo')
+    csv_data = data.get('csv')
+    if not correo or not csv_data:
+        return "Faltan datos", 400
+
+    msg = EmailMessage()
+    msg['Subject'] = 'Histórico de Llamadas'
+    msg['From'] = MY_EMAIL
+    msg['To'] = correo
+    msg.set_content('Adjunto el histórico de llamadas en formato CSV.')
+    msg.add_attachment(
+        csv_data.encode('utf-8'),
+        maintype='text',
+        subtype='csv',
+        filename='historico_llamadas.csv'
+    )
+
+    try:
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(MY_EMAIL, EMAIL_PASSWORD)
+            smtp.send_message(msg)
+        return "Correo enviado correctamente"
+    except Exception as e:
+        return f"Error al enviar el correo: {e}", 500
+
+
