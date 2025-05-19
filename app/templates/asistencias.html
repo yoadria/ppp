@@ -60,9 +60,23 @@
                 class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none">
                 Exportar a CSV
             </button>
+            <button type="button" onclick="mostrarModalCorreo()"
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none">
+                Enviar por correo
+            </button>
         </div>
-
-
+        <!-- Modal para ingresar el correo -->
+        <div id="modalCorreo" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); z-index:1000;">
+            <div style="background:white; padding:2rem; border-radius:8px; max-width:350px; margin:10vh auto;">
+                <label for="correoDestino" class="block mb-2 font-bold">Correo a enviar</label>
+                <input type="email" id="correoDestino" class="border rounded w-full mb-4 px-2 py-1" placeholder="ejemplo@correo.com" required>
+                <div class="flex justify-end gap-2">
+                    <button onclick="enviarCSVporCorreo()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Enviar</button>
+                    <button onclick="cerrarModalCorreo()" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancelar</button>
+                </div>
+                <div id="mensajeCorreo" class="mt-2 text-sm"></div>
+            </div>
+        </div>
 
 
         {% if llamadas %}
@@ -122,6 +136,48 @@
             document.body.appendChild(downloadLink);
             downloadLink.click();
             document.body.removeChild(downloadLink);
+        }
+
+        // Mostrar y ocultar el modal
+        function mostrarModalCorreo() {
+            document.getElementById('modalCorreo').style.display = 'block';
+            document.getElementById('mensajeCorreo').innerText = '';
+        }
+        function cerrarModalCorreo() {
+            document.getElementById('modalCorreo').style.display = 'none';
+        }
+
+        // Generar el CSV y enviarlo por fetch POST
+        function enviarCSVporCorreo() {
+            var correo = document.getElementById('correoDestino').value;
+            if (!correo) {
+                document.getElementById('mensajeCorreo').innerText = 'Introduce un correo válido.';
+                return;
+            }
+            // Generar el CSV igual que en exportTableToCSV
+            var csv = [];
+            var rows = document.querySelectorAll("#tabla-asistencias tr");
+            for (var i = 0; i < rows.length; i++) {
+                var row = [], cols = rows[i].querySelectorAll("th, td");
+                for (var j = 0; j < cols.length; j++)
+                    row.push('"' + cols[j].innerText.replace(/"/g, '""') + '"');
+                csv.push(row.join(","));
+            }
+            var csvContent = csv.join("\n");
+
+            fetch("{{ url_for('main.enviar_csv') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ correo: correo, csv: csvContent })
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('mensajeCorreo').innerText = data;
+                setTimeout(cerrarModalCorreo, 2000);
+            })
+            .catch(() => {
+                document.getElementById('mensajeCorreo').innerText = "Error al enviar el correo.";
+            });
         }
         </script>
     {% endblock %}

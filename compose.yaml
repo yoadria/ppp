@@ -50,6 +50,10 @@ services:
       - IP_RELE=${IP_RELE}
       - WDB_SOCKET_SERVER=wdb
       - WDB_NO_BROWSER_AUTO_OPEN=True
+      - MY_EMAIL=${MY_EMAIL}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+
+
     depends_on:
       - mariadb
     volumes:
